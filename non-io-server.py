@@ -1,9 +1,13 @@
 import selectors
 import socket
+from _thread import *
 
 class EchoNIOServer:
+    
     def __init__(self, address, port):
         self.selector = selectors.DefaultSelector()
+        address=socket.gethostname()
+         
         self.listen_address = (address, port)
 
     def start_server(self):
@@ -14,6 +18,7 @@ class EchoNIOServer:
         server_socket.setblocking(False)
         self.selector.register(server_socket, selectors.EVENT_READ, data=None)
         print(f"Server started on port >> {self.listen_address[1]}")
+        print(f"addressName:{self.listen_address[0]}")
 
         while True:
             events = self.selector.select(timeout=None)
@@ -26,6 +31,7 @@ class EchoNIOServer:
     def accept_connection(self, server_socket):
         client_socket, client_address = server_socket.accept()
         print(f"Connected to: {client_address}")
+        
         client_socket.setblocking(False)
         self.selector.register(client_socket, selectors.EVENT_READ, data=b'')
 
