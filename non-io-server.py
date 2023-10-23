@@ -1,12 +1,12 @@
 import selectors
 import socket
-import _thread
 
 class EchoNIOServer:
     
     def __init__(self, address, port):
         self.selector = selectors.DefaultSelector()
         self.listen_address = (address, port)
+        self.first_line_received = False
 
     def start_server(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,20 +36,16 @@ class EchoNIOServer:
             print(f"Socket error: {e}")
 
     def service_connection(self, key, mask):
-        first_line_received=False
-        while True:
-            events = self.selector.select(timeout=None)
-            for key, mask in events:
-                    data = key.fileobj.recv(1024)
-                    if data:
-                        data_decoded = str(data, 'utf-8')
-                        if not first_line_received:
-                            first_line_received = True
-                            print(f"Got: {data_decoded.splitlines()[0]}")
-                    else:
-                        print(f"Connection closed by client: {key.fileobj.getpeername()}")
-                        self.selector.unregister(key.fileobj)
-                        key.fileobj.close()
+        data = key.fileobj.recv(1024)
+        if data:
+            data_decoded = str(data, 'utf-8')
+            if not self.first_line_received:
+                self.first_line_received = True
+                print(f"Got: {data_decoded.splitlines()[0]}")
+        else:
+            print(f"Connection closed by client: {key.fileobj.getpeername()}")
+            self.selector.unregister(key.fileobj)
+            key.fileobj.close()
 
 if __name__ == '__main__':
     server = EchoNIOServer('localhost', 9093)
