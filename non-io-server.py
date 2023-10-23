@@ -1,13 +1,11 @@
 import selectors
 import socket
-from _thread import *
+import _thread
 
 class EchoNIOServer:
     
     def __init__(self, address, port):
         self.selector = selectors.DefaultSelector()
-        address=socket.gethostname()
-         
         self.listen_address = (address, port)
 
     def start_server(self):
@@ -29,22 +27,29 @@ class EchoNIOServer:
                     self.service_connection(key, mask)
 
     def accept_connection(self, server_socket):
-        client_socket, client_address = server_socket.accept()
-        print(f"Connected to: {client_address}")
-        
-        client_socket.setblocking(False)
-        self.selector.register(client_socket, selectors.EVENT_READ, data=b'')
+        try:
+            client_socket, client_address = server_socket.accept()
+            print(f"Connected to: {client_address}")
+            client_socket.setblocking(False)
+            self.selector.register(client_socket, selectors.EVENT_READ, data=b'')
+        except socket.error as e:
+            print(f"Socket error: {e}")
 
     def service_connection(self, key, mask):
-        sock = key.fileobj
-        if mask & selectors.EVENT_READ:
-            data = sock.recv(1024)
-            if data:
-                print(f"Got: {data.decode()}")
-            else:
-                print(f"Connection closed by client: {sock.getpeername()}")
-                self.selector.unregister(sock)
-                sock.close()
+        first_line_received=False
+        while True:
+            events = self.selector.select(timeout=None)
+            for key, mask in events:
+                    data = key.fileobj.recv(1024)
+                    if data:
+                        data_decoded = str(data, 'utf-8')
+                        if not first_line_received:
+                            first_line_received = True
+                            print(f"Got: {data_decoded.splitlines()[0]}")
+                    else:
+                        print(f"Connection closed by client: {key.fileobj.getpeername()}")
+                        self.selector.unregister(key.fileobj)
+                        key.fileobj.close()
 
 if __name__ == '__main__':
     server = EchoNIOServer('localhost', 9093)
