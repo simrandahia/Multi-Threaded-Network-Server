@@ -1,8 +1,8 @@
+# working at 6pm, 29th oct 2023
+
 import argparse
 import selectors
 import socket
-
-COUNT = 1
 
 class Node:
     def __init__(self, data):
@@ -37,26 +37,12 @@ class LinkedList:
             last_node = last_node.next
         print("->", last_node.data)
 
-class Book:
-    def __init__(self, name):
-        self.name = name
-        self.content = []
-
-    def add_line(self, line):
-        self.content.append(line)
-
-    def save_to_file(self):
-        with open(f"{self.name}.txt", "w") as file:
-            file.writelines(self.content)
-        print(f"{self.name} saved on server")
-
 class EchoNIOServer:
     def __init__(self, address, port):
         self.linked_list = LinkedList()
         self.selector = selectors.DefaultSelector()
         self.listen_address = (address, port)
         self.first_line_received = False
-        self.books = []
 
     def start_server(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -91,46 +77,15 @@ class EchoNIOServer:
         if mask & selectors.EVENT_READ:
             data = sock.recv(1024)
             if data:
-                # print(f"Got: {data.decode()}")
-                # book_name = self.determine_book_name(data.decode())  # Replace with logic to identify book name
-                # book = self.get_or_create_book(book_name)
-                # book.add_line(data.decode())
-                try:
-                    decoded_data = data.decode('utf-8')
-                    print(f"Got: {decoded_data}")
-                    book_name = self.determine_book_name(decoded_data)
-                    book = self.get_or_create_book(book_name)
-                    book.add_line(decoded_data)
-
-                    # Save data to a file
-                    with open(f"{book_name}.txt", "a") as file:
-                        file.write(decoded_data)
-
-                except UnicodeDecodeError as e:
-                    # Handle the decoding error gracefully
-                    print(f"Error decoding data: {e}")
-
+                print(f"Got: {data.decode()}")
+                self.linked_list.appendNode(data.decode())
+                self.linked_list.getlast()
             else:
                 print(f"Connection closed by client: {sock.getpeername()}")
                 self.selector.unregister(sock)
                 sock.close()
 
-    def determine_book_name(self, data):
-        # Implement logic to identify the book name from data
-        global COUNT
-        # COUNT += 1
-        return f"book_0{COUNT}"  
-
-    def get_or_create_book(self, name):
-        for book in self.books:
-            if book.name == name:
-                return book
-        new_book = Book(name)
-        self.books.append(new_book)
-        return new_book
-
 if __name__ == '__main__':
-    
     parser = argparse.ArgumentParser(description="Echo Server")
     parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
     parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
