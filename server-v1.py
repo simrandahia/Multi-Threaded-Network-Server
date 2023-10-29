@@ -1,12 +1,46 @@
 import selectors
 import socket
 
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    def appendNode(self, data):
+        new_node = Node(data)
+        if not self.head:
+            self.head = new_node
+            return
+        last_node = self.head
+        while last_node.next:
+            last_node = last_node.next
+        last_node.next = new_node
+
+    def print_list(self):
+        elements = []
+        current_node = self.head
+        while current_node:
+            elements.append(str(current_node.data))
+            current_node= current_node.next
+        print(" -> ".join(elements)) # print the whole linked list
+
+    def getlast(self): #print the last node
+        last_node=self.head
+        while last_node.next:
+            last_node=last_node.next
+        print("->",last_node.data) 
+
 class EchoNIOServer:
-    
     def __init__(self, address, port):
+        self.linked_list = LinkedList()
         self.selector = selectors.DefaultSelector()
         self.listen_address = (address, port)
         self.first_line_received = False
+        self.client_address=[]
 
     def start_server(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -21,44 +55,35 @@ class EchoNIOServer:
         while True:
             events = self.selector.select(timeout=None)
             for key, mask in events:
-                # print("\nTEST 1: ", key, "\n")
-                # print("\nData in key: ", key.data, "\n")
-                
                 if key.data is None:
                     self.accept_connection(key.fileobj)
                 else:
                     self.service_connection(key, mask)
-                    # print("Service conn called")
 
     def accept_connection(self, server_socket):
         try:
             client_socket, client_address = server_socket.accept()
+            self.client_address=client_address[1]
             print(f"Connected to: {client_address}")
-            self.first_line_received = False       # THISSS
+            self.first_line_received = False
             client_socket.setblocking(False)
             self.selector.register(client_socket, selectors.EVENT_READ, data=b'')
         except socket.error as e:
             print(f"Socket error: {e}")
 
     def service_connection(self, key, mask):
-        data = key.fileobj.recv(1024)
-        if data:
-            # data_decoded = str(data, 'utf-8')
-            try:
-                data_decoded = data.decode('utf-8')
-            except UnicodeDecodeError as e:
-                print(f"Error decoding data: {e}")
-            # print("\n\nFIRST LINE: ", self.first_line_received, "\n\n")
-            if not self.first_line_received:
-                self.first_line_received = True
-                print(f"Got: {data_decoded.splitlines()[0]}")
-                # self.first_line_received = False
-            # else:
-                # print("YAHOOOO")
-        else:
-            print(f"Connection closed by client: {key.fileobj.getpeername()}")
-            self.selector.unregister(key.fileobj)
-            key.fileobj.close()
+         
+        sock = key.fileobj
+        if mask & selectors.EVENT_READ:
+            data = sock.recv(1024)
+            if data:
+                print(f"Got: {self.client_address,data.decode()}")
+                self.linked_list.appendNode(data.decode())
+                self.linked_list.getlast()
+            else:
+                print(f"Connection closed by client: {sock.getpeername()}")
+                self.selector.unregister(sock)
+                sock.close()
 
 if __name__ == '__main__':
     server = EchoNIOServer('localhost', 9093)
