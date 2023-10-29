@@ -2,12 +2,6 @@ import argparse
 import selectors
 import socket
 
-# need a multi-linked list: 
-# Head of this list points to the order in which books are received
-# head of book A --> points to book A nodes, head of book B --> points to book B nodes,
-# node->next - links to the next element in the shared list.   
-# node->book_next - links to the next item in the same book. 
-# node->next_frequent_search  (part2) links to the next item that had the search terms
 class Node:
     def __init__(self, data):
         self.data = data
@@ -32,14 +26,14 @@ class LinkedList:
         current_node = self.head
         while current_node:
             elements.append(str(current_node.data))
-            current_node= current_node.next
-        print(" -> ".join(elements)) # print the whole linked list
+            current_node = current_node.next
+        print(" -> ".join(elements))
 
-    def getlast(self): #print the last node
-        last_node=self.head
+    def getlast(self):
+        last_node = self.head
         while last_node.next:
-            last_node=last_node.next
-        print("->",last_node.data) 
+            last_node = last_node.next
+        print("->", last_node.data)
 
 class EchoNIOServer:
     def __init__(self, address, port):
@@ -47,7 +41,6 @@ class EchoNIOServer:
         self.selector = selectors.DefaultSelector()
         self.listen_address = (address, port)
         self.first_line_received = False
-        self.client_address=[]
 
     def start_server(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -70,7 +63,6 @@ class EchoNIOServer:
     def accept_connection(self, server_socket):
         try:
             client_socket, client_address = server_socket.accept()
-            self.client_address=client_address[1]
             print(f"Connected to: {client_address}")
             self.first_line_received = False
             client_socket.setblocking(False)
@@ -79,12 +71,11 @@ class EchoNIOServer:
             print(f"Socket error: {e}")
 
     def service_connection(self, key, mask):
-         
         sock = key.fileobj
         if mask & selectors.EVENT_READ:
             data = sock.recv(1024)
             if data:
-                print(f"Got: {self.client_address,data.decode()}")
+                print(f"Got: {data.decode()}")
                 self.linked_list.appendNode(data.decode())
                 self.linked_list.getlast()
             else:
@@ -93,13 +84,9 @@ class EchoNIOServer:
                 sock.close()
 
 if __name__ == '__main__':
-    # server = EchoNIOServer('localhost', 9093)
-    # server.start_server()
-    
     parser = argparse.ArgumentParser(description="Echo Server")
     parser.add_argument('-p', '--port', type=int, default=9093, help='Port number to listen on')
     args = parser.parse_args()
 
-    server = EchoNIOServer('localhost', args.port)  # Use the specified port
+    server = EchoNIOServer('localhost', args.port)
     server.start_server()
-
