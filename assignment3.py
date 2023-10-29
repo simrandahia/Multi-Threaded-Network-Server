@@ -85,8 +85,9 @@ class EchoNIOServer:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Echo Server")
-    parser.add_argument('-p', '--port', type=int, default=9093, help='Port number to listen on')
+    parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
+    parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
     args = parser.parse_args()
 
-    server = EchoNIOServer('localhost', args.port)
+    server = EchoNIOServer('localhost', args.listen)  # Use the specified port
     server.start_server()
