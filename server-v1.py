@@ -1,6 +1,12 @@
 import selectors
 import socket
 
+# need a multi-linked list: 
+# Head of this list points to the order in which books are received
+# head of book A --> points to book A nodes, head of book B --> points to book B nodes,
+# node->next - links to the next element in the shared list.   
+# node->book_next - links to the next item in the same book. 
+# node->next_frequent_search  (part2) links to the next item that had the search terms
 class Node:
     def __init__(self, data):
         self.data = data
