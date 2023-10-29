@@ -1,3 +1,4 @@
+import argparse
 import selectors
 import socket
 
@@ -92,5 +93,13 @@ class EchoNIOServer:
                 sock.close()
 
 if __name__ == '__main__':
-    server = EchoNIOServer('localhost', 9093)
+    # server = EchoNIOServer('localhost', 9093)
+    # server.start_server()
+    
+    parser = argparse.ArgumentParser(description="Echo Server")
+    parser.add_argument('-p', '--port', type=int, default=9093, help='Port number to listen on')
+    args = parser.parse_args()
+
+    server = EchoNIOServer('localhost', args.port)  # Use the specified port
     server.start_server()
+
