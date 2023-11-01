@@ -3,6 +3,9 @@ import argparse
 import selectors
 import socket
 import threading
+# Reference: 
+# https://medium.com/coderscorner/tale-of-client-server-and-socket-a6ef54a74763
+# https://github.com/arukshani/JavaIOAndNIO/blob/master/src/com/ruk/blocking/io/EchoIOServer.java
 
 COUNT = 0
 
@@ -48,26 +51,19 @@ class LinkedList:
     def appendNode(self, data):
         self.received_data.append(data)
 
-    def print_list(self):
-        elements = []
-        for data in self.received_data:
-            elements.append(str(data.name))
-        print(" -> ".join(elements))
-
-    def get_last(self):
+    def printBook(self):
         for data in self.received_data:
             print(f"Received Book: {data.name}")
 
 
 
 
-class EchoNIOServer:
+class Non_blocking_server:
     def __init__(self, address, port):
         self.linked_list = LinkedList()
         self.selector = selectors.DefaultSelector()
         self.listen_address = (address, port)
         self.books = []
-        self.previous_clientaddress=[]
         self.new_book=[]
 
     def start_server(self):
@@ -77,6 +73,7 @@ class EchoNIOServer:
         server_socket.listen(5)
         server_socket.setblocking(False)
         self.selector.register(server_socket, selectors.EVENT_READ, data=None)
+        #to determine the netcat network 
         print(f"Server started on port >> {self.listen_address[1]}")
         print(f"addressName:{self.listen_address[0]}")
 
@@ -92,13 +89,10 @@ class EchoNIOServer:
         try:
             client_socket, client_address = server_socket.accept()
             print(f"Connected to: {client_address}")
-            print(f"",client_address[1])
-            self.previous_clientaddress.append(client_address[1])
             client_socket.setblocking(False)
             self.selector.register(client_socket, selectors.EVENT_READ, data=b'')
             self.new_book = Book(f"book_0{len(self.books) + 1}")
             self.books.append(self.new_book)
-            # Create a new thread for the new connection
             threading.Thread(target=self.service_connection, args=(client_socket, self.new_book)).start()
         except socket.error as e:      
             print(f"Socket error: {e}")
@@ -110,15 +104,12 @@ class EchoNIOServer:
             if data:
                 try:
                     decoded_data = data.decode('utf-8')
-                    # print(f"Got: {decoded_data}")
-                     
                     book=self.books[-1]
                     book_name = book.name
                     book.add_line(decoded_data)
                     book.display_content()
                     self.linked_list.appendNode(book)
-                    self.linked_list.get_last()
-                    # Save data to a file
+                    self.linked_list.printBook()
                     with open(f"{book_name}.txt", "a") as file:
                         file.write(decoded_data)
                 except UnicodeDecodeError as e:
@@ -137,5 +128,5 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
     args = parser.parse_args()
 
-    server = EchoNIOServer('localhost', args.listen)  # Use the specified port
+    server = Non_blocking_server('localhost', args.listen)  # Use the specified port
     server.start_server()
