@@ -2,6 +2,7 @@
 import argparse
 import selectors
 import socket
+import threading
 
 COUNT = 0
 
@@ -42,30 +43,21 @@ class Book:
 class LinkedList:
     def __init__(self):
         self.shared_head = None
+        self.received_data = []
 
     def appendNode(self, data):
-        new_node = Node(data)
-        if self.shared_head is None:
-            self.shared_head = new_node
-        else:
-            current = self.shared_head
-            while current.next:
-                current = current.next
-            current.next = new_node
+        self.received_data.append(data)
 
     def print_list(self):
         elements = []
-        current_node = self.head
-        while current_node:
-            elements.append(str(current_node.data))
-            current_node = current_node.next
+        for data in self.received_data:
+            elements.append(str(data.name))
         print(" -> ".join(elements))
 
-    def getlast(self):
-        current = self.shared_head
-        while current:
-            print(f"Received Book: {current.data.name}")
-            current = current.next
+    def get_last(self):
+        for data in self.received_data:
+            print(f"Received Book: {data.name}")
+
 
 
 
@@ -76,6 +68,7 @@ class EchoNIOServer:
         self.listen_address = (address, port)
         self.books = []
         self.previous_clientaddress=[]
+        self.new_book=[]
 
     def start_server(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -103,6 +96,10 @@ class EchoNIOServer:
             self.previous_clientaddress.append(client_address[1])
             client_socket.setblocking(False)
             self.selector.register(client_socket, selectors.EVENT_READ, data=b'')
+            self.new_book = Book(f"book_0{len(self.books) + 1}")
+            self.books.append(self.new_book)
+            # Create a new thread for the new connection
+            threading.Thread(target=self.service_connection, args=(client_socket, self.new_book)).start()
         except socket.error as e:      
             print(f"Socket error: {e}")
 
@@ -114,12 +111,13 @@ class EchoNIOServer:
                 try:
                     decoded_data = data.decode('utf-8')
                     # print(f"Got: {decoded_data}")
-                    book_name = self.determine_book_name(decoded_data)
-                    book = self.get_or_create_book(book_name)
+                     
+                    book=self.books[-1]
+                    book_name = book.name
                     book.add_line(decoded_data)
+                    book.display_content()
                     self.linked_list.appendNode(book)
-                    self.linked_list.getlast()
-
+                    self.linked_list.get_last()
                     # Save data to a file
                     with open(f"{book_name}.txt", "a") as file:
                         file.write(decoded_data)
@@ -130,25 +128,7 @@ class EchoNIOServer:
                 self.selector.unregister(sock)
                 sock.close()
 
-    def determine_book_name(self, data):
-        global COUNT
-        for i in range(len(self.previous_clientaddress)-1):
-                if self.previous_clientaddress[i]!=self.previous_clientaddress[i+1]:
-                    COUNT += 1
-                    print("newbook1")
-                    return f"book_0{COUNT}"
-                else:
-                    print("newbook")
-                    return f"book_0{COUNT}"
-        
-    def get_or_create_book(self, name):
-        for book in self.books:
-            if book.name == name:
-                return book
-        new_book = Book(name)
-        self.books.append(new_book)
-        print("Hello")
-        return new_book
+     
     
 if __name__ == '__main__':
     
