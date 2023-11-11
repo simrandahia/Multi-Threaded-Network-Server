@@ -6,7 +6,6 @@ import socket
 import threading
 import time
 from collections import Counter
-import logging
 
 class Node:
     def __init__(self, data, book=None):
@@ -187,8 +186,8 @@ class NonBlockingServer:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Echo Server")
     parser.add_argument('-l', '--listen', type=str, default='localhost', help='Address to listen on')
-    parser.add_argument('-port', '--port', type=int, default=9093, help='Port number to listen on')
-    parser.add_argument('-p', '--pattern', type=str, required=True, help='Search pattern for analysis')
+    parser.add_argument('-p', '--port', type=int, default=9093, help='Port number to listen on')  # Change -port to -p
+    parser.add_argument('-patt', '--pattern', type=str, required=True, help='Search pattern for analysis')  # Change -p to -patt
     parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
     parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
     args = parser.parse_args()
