@@ -112,6 +112,8 @@ class NonBlockingServer:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Echo Server")
     parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
+    parser.add_argument('-p', '--param', type=str, default='happy', help='Parameter -p')
+    parser.add_argument('-port', '--port', type=int, default=9093, help='Port number to listen on')
     args = parser.parse_args()
 
     server = NonBlockingServer('localhost', args.listen)
