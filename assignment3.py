@@ -109,13 +109,13 @@ def start_analysis_threads(linked_list, search_pattern, interval, num_threads):
     return threads
 
 class NonBlockingServer:
-    def __init__(self, address, port, search_pattern, analysis_interval, num_analysis_threads):
+    def __init__(self, listen_address, search_pattern, analysis_interval, num_analysis_threads):
         self.linked_list = LinkedList()
         self.analysis_threads = start_analysis_threads(
             self.linked_list, search_pattern, analysis_interval, num_analysis_threads
         )
         self.selector = selectors.DefaultSelector()
-        self.listen_address = (address, port)
+        self.listen_address = listen_address
         self.books = []
 
     def start_server(self):
@@ -125,7 +125,8 @@ class NonBlockingServer:
         server_socket.listen(5)
         server_socket.setblocking(False)
         self.selector.register(server_socket, selectors.EVENT_READ, data=None)
-        print(f"Server started on port {self.listen_address[1]}")
+        # print(f"Server started on port {self.listen_address[1]}")
+        print(f"Server started on {self.listen_address[0]}:{self.listen_address[1]}")
 
         while True:
             events = self.selector.select(timeout=None)
@@ -194,6 +195,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
     args = parser.parse_args()
 
-    server = NonBlockingServer(args.listen, args.port, args.pattern, args.interval, args.num_threads)
+    listen_address = ('localhost', 12345)
+    server = NonBlockingServer(listen_address, args.param, args.interval, args.num_threads)
     server.start_server()
     server.stop_analysis_threads()
