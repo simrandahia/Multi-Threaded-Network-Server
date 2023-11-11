@@ -13,7 +13,7 @@ class Book:
         self.name = name
         self.content_head = None
         self.content_tail = None
-        self.lock = threading.Lock()
+        self.lock = threading.Lock()  # Lock for each book
 
     def add_line(self, line):
         new_node = Node(line)
