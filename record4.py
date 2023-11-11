@@ -1,4 +1,7 @@
-# works at 6am 12-nov-23
+# works at 6am 12-nov-23 
+# python3 assignment3.py -l localhost -p "little"
+# nc localhost 9093 -i 1 <bookA.txt
+# nc localhost 9093 -i 1 <bookB.txt
 
 import argparse
 import selectors
