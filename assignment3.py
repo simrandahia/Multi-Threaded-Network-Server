@@ -193,7 +193,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
     args = parser.parse_args()
 
-    print(args.pattern)
+    # print(args.pattern)
 
     server = NonBlockingServer(args.listen, args.port, args.pattern, args.interval, args.num_threads)
     server.start_server()
