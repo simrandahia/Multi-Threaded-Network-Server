@@ -186,13 +186,12 @@ class NonBlockingServer:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Echo Server")
     parser.add_argument('-l', '--listen', type=str, default='localhost', help='Address to listen on')
-    parser.add_argument('-p', '--pattern', type=str, required=True, help='Search pattern for analysis')  # Change -patt to -p
+    parser.add_argument('-p', '--port', type=int, default=9093, help='Port number to listen on')
+    parser.add_argument('pattern', type=str, help='Search pattern for analysis')  # Accept pattern without option
     parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
     parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
     args = parser.parse_args()
 
-    # print(args.pattern)
-
-    server = NonBlockingServer(args.listen, 12345, args.pattern, args.interval, args.num_threads)  # Change -p to -patt
+    server = NonBlockingServer(args.listen, args.port, args.pattern, args.interval, args.num_threads)
     server.start_server()
     server.stop_analysis_threads()
