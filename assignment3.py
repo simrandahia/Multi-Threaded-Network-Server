@@ -203,5 +203,5 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
     args = parser.parse_args()
 
-    server = Non_blocking_server('localhost', args.listen)  # Use the specified port
+    server = NonBlockingServer('localhost', args.listen)  # Use the specified port
     server.start_server()
