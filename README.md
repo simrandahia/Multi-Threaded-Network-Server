@@ -1,6 +1,9 @@
 # Multi-Threaded-Network-Server
 Multi-Threaded Network Server for Pattern Analysis
 
+PART A: 
+python3 assignment3.py -l 0.0.0.0 -p 12345 -p "little"
+
 
 FOR PART B: 
 
