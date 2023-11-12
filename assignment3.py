@@ -201,23 +201,22 @@ class Non_blocking_server:
         for thread in self.analysis_threads:
             thread.stop_event.set()
             thread.join()
-    
+
 if __name__ == '__main__':
     try:
         parser = argparse.ArgumentParser(description="Echo Server")
-        parser.add_argument('-l', '--listen', type=int, default=12345, help='Initial port number to listen on')
+        parser.add_argument('-l', '--listen', type=str, default='localhost', help='Address to listen on')
         parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
         parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
         parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
         args = parser.parse_args()
 
         # Pass the additional parameters to the Non_blocking_server constructor
-        server = Non_blocking_server('localhost', args.listen, args.param, args.interval, args.num_threads)
+        server = Non_blocking_server(args.listen, 9093, args.param, args.interval, args.num_threads)
         server.start_server()
         server.stop_analysis_threads()
 
     except Exception as e:
         print(f"An error occurred: {e}")
-
 
 
