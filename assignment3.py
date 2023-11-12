@@ -10,16 +10,20 @@ import threading
 COUNT = 0
 
 class Node:
-    def __init__(self, data):
+    def __init__(self, data, book=None):
         self.data = data
         self.next = None
         self.book_next=None
+        self.next_frequent_search = None
+        self.book = book
 
 class Book:
     def __init__(self, name):
         self.name = name
         self.content_head=None
         self.content_tail=None
+        self.lock = threading.Lock()
+        
     def add_line(self, line):
         new_node = Node(line)
         if self.content_head is None:
@@ -32,7 +36,7 @@ class Book:
     def display_content(self):
         current=self.content_head
         while current:
-            print(f"",self.name,current.data)
+            print(f"",self.name,current.data)    # CAN COMMENT OUT
             current=current.next
 
     def save_to_file(self):
@@ -42,6 +46,11 @@ class Book:
                 file.write(current.data)
                 current = current.next
         print(f"{self.name} saved on server")
+        
+    def update_frequent_searches(self, new_node):
+        with self.lock:
+            new_node.next_frequent_search = self.content_head
+            self.content_head = new_node
 
 class LinkedList:
     def __init__(self):
