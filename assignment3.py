@@ -205,7 +205,7 @@ class Non_blocking_server:
 if __name__ == '__main__':
     try:
         parser = argparse.ArgumentParser(description="Echo Server")
-        parser.add_argument('-l', '--listen', type=int, default=9093, help='Initial port number to listen on')
+        parser.add_argument('-l', '--listen', type=int, default=12345, help='Initial port number to listen on')
         parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
         parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
         parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
