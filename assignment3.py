@@ -196,13 +196,18 @@ class Non_blocking_server:
     
 if __name__ == '__main__':
     
-    parser = argparse.ArgumentParser(description="Echo Server")
-    parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
-    parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
-    parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
-    parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
-    args = parser.parse_args()
+    try:
+        parser = argparse.ArgumentParser(description="Echo Server")
+        parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
+        parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
+        parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
+        parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
+        args = parser.parse_args()
 
-    server = Non_blocking_server('localhost', args.listen)  # Use the specified port
-    server.start_server()
-    server.stop_analysis_threads()
+        server = Non_blocking_server('localhost', args.listen)
+        server.start_server()
+        server.stop_analysis_threads()
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
