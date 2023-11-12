@@ -185,14 +185,12 @@ class NonBlockingServer:
             thread.join()
 
 if __name__ == '__main__':
+     
     parser = argparse.ArgumentParser(description="Echo Server")
     parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
     parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
-    parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
-    parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
     args = parser.parse_args()
 
-    listen_address = ('localhost', 12345)
-    server = NonBlockingServer(listen_address, args.param, args.interval, args.num_threads)
+    server = NonBlockingServer('localhost', args.listen,args.param)  # Use the specified port
     server.start_server()
     server.stop_analysis_threads()
