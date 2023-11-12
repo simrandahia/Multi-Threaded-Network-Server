@@ -138,7 +138,6 @@ class Non_blocking_server:
         # Increment port for the next book
         self.listen_address = (self.listen_address[0], self.listen_address[1] + 1)
 
-        #to determine the netcat network 
         print(f"Server started on port >> {self.listen_address[1]}")
         print(f"addressName:{self.listen_address[0]}")
 
@@ -159,11 +158,12 @@ class Non_blocking_server:
 
             # Assign a unique port to each book
             new_book_port = self.listen_address[1]
-            self.new_book = Book(f"book_0{len(self.books) + 1}", new_book_port)
+            new_book_name = f"book_{len(self.books) + 1:02d}"
+            self.new_book = Book(new_book_name, new_book_port)
             self.books.append(self.new_book)
 
             threading.Thread(target=self.service_connection, args=(client_socket, self.new_book)).start()
-        except socket.error as e:      
+        except socket.error as e:
             print(f"Socket error: {e}")
 
     def service_connection(self, key, mask):
@@ -216,8 +216,8 @@ if __name__ == '__main__':
         server.start_server()
         server.stop_analysis_threads()
 
-
     except Exception as e:
         print(f"An error occurred: {e}")
+
 
 
