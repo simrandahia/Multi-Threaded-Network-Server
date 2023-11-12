@@ -1,7 +1,4 @@
-# works at 6am 12-nov-23 
-# python3 assignment3.py -l localhost -p "little"
-# nc localhost 9093 -i 1 <bookA.txt
-# nc localhost 9093 -i 1 <bookB.txt
+# doesn't really work 4pm 12-no-23 
 
 import argparse
 import selectors
@@ -9,7 +6,6 @@ import socket
 import threading
 import time
 from collections import Counter
-import logging
 
 class Node:
     def __init__(self, data, book=None):
@@ -113,23 +109,33 @@ def start_analysis_threads(linked_list, search_pattern, interval, num_threads):
     return threads
 
 class NonBlockingServer:
+    # address, port
     def __init__(self, address, port, search_pattern, analysis_interval, num_analysis_threads):
         self.linked_list = LinkedList()
         self.analysis_threads = start_analysis_threads(
             self.linked_list, search_pattern, analysis_interval, num_analysis_threads
         )
         self.selector = selectors.DefaultSelector()
+        # self.listen_address = listen_address
         self.listen_address = (address, port)
         self.books = []
 
     def start_server(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server_socket.bind(self.listen_address)
-        server_socket.listen(5)
-        server_socket.setblocking(False)
-        self.selector.register(server_socket, selectors.EVENT_READ, data=None)
-        print(f"Server started on port {self.listen_address[1]}")
+
+        try:
+            server_socket.bind(self.listen_address)
+            server_socket.listen(5)
+            server_socket.setblocking(False)
+            self.selector.register(server_socket, selectors.EVENT_READ, data=None)
+            print(f"Server started on port >> {self.listen_address[1]}")
+            print(f"addressName:{self.listen_address[0]}")
+
+        except OSError as e:
+            print(f"Error binding to {self.listen_address}: {e}")
+            server_socket.close()
+            return
 
         while True:
             events = self.selector.select(timeout=None)
@@ -188,6 +194,13 @@ class NonBlockingServer:
             thread.join()
 
 if __name__ == '__main__':
+    # parser = argparse.ArgumentParser(description="Echo Server")
+    # parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
+    # parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
+    # parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
+    # parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
+    # args = parser.parse_args()
+    
     parser = argparse.ArgumentParser(description="Echo Server")
     parser.add_argument('-l', '--listen', type=str, default='localhost', help='Address to listen on')
     parser.add_argument('-port', '--port', type=int, default=9093, help='Port number to listen on')
@@ -196,8 +209,17 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
     args = parser.parse_args()
 
-    print(args.pattern)
-
+    # listen_address = ('localhost', 12345)
     server = NonBlockingServer(args.listen, args.port, args.pattern, args.interval, args.num_threads)
     server.start_server()
     server.stop_analysis_threads()
+
+
+    # parser = argparse.ArgumentParser(description="Echo Server")
+    # parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
+    # parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
+    # args = parser.parse_args()
+
+    # server = NonBlockingServer('localhost', args.listen)  # Use the specified port
+    # server.start_server()
+    
