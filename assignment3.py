@@ -23,10 +23,11 @@ class Node:
         self.next_frequent_search = None
         self.book = book
 class Book:
-    def __init__(self, name):
+    def __init__(self, name, port):
         self.name = name
-        self.content_head=None
-        self.content_tail=None
+        self.port = port
+        self.content_head = None
+        self.content_tail = None
         self.lock = threading.Lock()
         
     def add_line(self, line):
@@ -116,12 +117,12 @@ def start_analysis_threads(linked_list, search_pattern, interval, num_threads):
     return threads
 
 class Non_blocking_server:
-    def __init__(self, address, port, search_pattern, analysis_interval, num_analysis_threads):
+    def __init__(self, address, initial_port, search_pattern, analysis_interval, num_analysis_threads):
         self.linked_list = LinkedList()
         self.selector = selectors.DefaultSelector()
-        self.listen_address = (address, port)
+        self.listen_address = (address, initial_port)
         self.books = []
-        self.new_book=[]
+        self.new_book = []
         self.analysis_threads = start_analysis_threads(
             self.linked_list, search_pattern, analysis_interval, num_analysis_threads
         )
@@ -133,6 +134,10 @@ class Non_blocking_server:
         server_socket.listen(5)
         server_socket.setblocking(False)
         self.selector.register(server_socket, selectors.EVENT_READ, data=None)
+
+        # Increment port for the next book
+        self.listen_address = (self.listen_address[0], self.listen_address[1] + 1)
+
         #to determine the netcat network 
         print(f"Server started on port >> {self.listen_address[1]}")
         print(f"addressName:{self.listen_address[0]}")
@@ -143,7 +148,6 @@ class Non_blocking_server:
                 if key.data is None:
                     self.accept_connection(key.fileobj)
                 else:
-                    # self.service_connection(key, mask)
                     threading.Thread(target=self.service_connection, args=(key,)).start()
 
     def accept_connection(self, server_socket):
@@ -152,8 +156,12 @@ class Non_blocking_server:
             print(f"Connected to: {client_address}")
             client_socket.setblocking(False)
             self.selector.register(client_socket, selectors.EVENT_READ, data=b'')
-            self.new_book = Book(f"book_0{len(self.books) + 1}")
+
+            # Assign a unique port to each book
+            new_book_port = self.listen_address[1]
+            self.new_book = Book(f"book_0{len(self.books) + 1}", new_book_port)
             self.books.append(self.new_book)
+
             threading.Thread(target=self.service_connection, args=(client_socket, self.new_book)).start()
         except socket.error as e:      
             print(f"Socket error: {e}")
@@ -197,7 +205,7 @@ class Non_blocking_server:
 if __name__ == '__main__':
     try:
         parser = argparse.ArgumentParser(description="Echo Server")
-        parser.add_argument('-l', '--listen', type=int, default=9093, help='Port number to listen on')
+        parser.add_argument('-l', '--listen', type=int, default=9093, help='Initial port number to listen on')
         parser.add_argument('-p', '--param', type=str, default="happy", help='Parameter -p')
         parser.add_argument('-i', '--interval', type=int, default=5, help='Analysis interval in seconds')
         parser.add_argument('-t', '--num-threads', type=int, default=2, help='Number of analysis threads')
@@ -207,6 +215,7 @@ if __name__ == '__main__':
         server = Non_blocking_server('localhost', args.listen, args.param, args.interval, args.num_threads)
         server.start_server()
         server.stop_analysis_threads()
+
 
     except Exception as e:
         print(f"An error occurred: {e}")
