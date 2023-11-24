@@ -1,21 +1,17 @@
 # Multi-Threaded-Network-Server
 Multi-Threaded Network Server for Pattern Analysis
 
-PART A: 
-python3 assignment3.py -l 0.0.0.0 -p 12345 -p "little"
+python3 MultiThreadedServer.py -l 0.0.0.0 -p 12345 -p "little"
+
+The code/implementation fulfills these requirements: 
+Pattern analysis frequency  
+Results printed at intervals
+Book titles sorted by the most frequent occurrences of the selected pattern
 
 
-FOR PART B: 
+For example, when you run the command: python3 MultiThreadedServer.py -l localhost -p "world", for two books each on different connection, then the outcome would look something like this:
 
-Our code/implementation fulfills all three requirements of the assignment: 
-Pattern analysis frequency is correct   (10%)
-Results printed at intervals  (5%)
-Book titles sorted by the most frequent occurrences of the selected pattern  (5%)
-
-
-For example, when you run the command: python3 assign3.py -l localhost -p "world", for two books each on different connection, then the outcome would look something like this:
-
-(Note: results are printed at intervals; while also printing the data that's being added to the shared data structure for PART A)
+(Note: results are printed at intervals; while also printing the data that's being added to the shared data structure)
 
 Books titles sorted by frequency of search pattern 'world':
 book_02: 1 occurrences
